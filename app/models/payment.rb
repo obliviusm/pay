@@ -6,8 +6,9 @@ class Payment < ActiveRecord::Base
       payment = Payment.where(line_item_id: params[:line_item_id], \
                               service_id: params[:service_id]).first_or_create
       if block_given?
+        payment.lock!
         yield(payment)
-        payment.save
+        payment.save!
       end
     end
   end
