@@ -3,8 +3,13 @@ class Payment < ActiveRecord::Base
 
   def self.with(params)
     transaction do
-      payment = Payment.where(line_item_id: params[:line_item_id], \
+      payment = begin
+        Payment.where(line_item_id: params[:line_item_id], \
                               service_id: params[:service_id]).first_or_create
+      rescue ActiveRecord::RecordNotUnique
+        Payment.where(line_item_id: params[:line_item_id], \
+                              service_id: params[:service_id]).first
+      end
       if block_given?
         payment.lock!
         yield(payment)
